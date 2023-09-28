@@ -1,18 +1,22 @@
 #include <iostream>
 #include "conio_linux.h"
-#include <unistd.h> 
+#include <unistd.h>
+#include <string.h>
+
+using namespace std;
 
 #define WORD_SIZE 5
 #define SQUARE_SIZE 5
 #define MAX_TRIES 6
-using namespace std;
+#define USERNAME_LEN 64
 
+string correct_word = "teste";
 typedef struct tries_struct{
-    char correct_word[WORD_SIZE+1];
+    string word;
     int colors[WORD_SIZE];
 } user_tries;
 
-void printSquare(int startX, int startY, char character, int color) {
+void printSquares(int startX, int startY, char character, int color) {
     setfontcolor(color);
     // Loop to print each row of the square
     for (int row = startY*(SQUARE_SIZE+1); row < startY*(SQUARE_SIZE+1)+SQUARE_SIZE; ++row) {
@@ -39,30 +43,41 @@ void printSquare(int startX, int startY, char character, int color) {
     }
 }
 
-void printRow(char word[WORD_SIZE], int colors[WORD_SIZE]) {
+void printTries(user_tries triesArray[MAX_TRIES]) {
     for (int i = 0; i < WORD_SIZE; i++)
     {
         for (int j = 0; j < MAX_TRIES; j++)
         {
-            printSquare(i,j,word[i],colors[i]);
+            printSquares(i,j,triesArray[j].word[i],triesArray[i].colors[i]);
         }
     }
 }
 
-// void initializeUserTries(user_tries triesArray[], int numTries) {
-//     char empty_word[WORD_SIZE + 1] = "     ";
-//     int standard_colors[WORD_SIZE] = {WHITE, WHITE, WHITE, WHITE, WHITE};
-//     for (int i = 0; i < numTries; ++i) {
-//         strncpy(triesArray[i].correct_word, empty_word, WORD_SIZE + 1);
-//         memcpy(triesArray[i].colors, standard_colors, sizeof(standard_colors));
-//     }
-// }
+void initializeUserTries(user_tries triesArray[MAX_TRIES], int numTries) {
+    string empty_word = "     ";
+    int standard_colors[WORD_SIZE] = {WHITE, WHITE, WHITE, WHITE, WHITE};
+    for (int i = 0; i < numTries; ++i) {
+        triesArray[i].word = empty_word;
+        memcpy(triesArray[i].colors, standard_colors, sizeof(standard_colors));
+    }
+}
 
 int main() {
+    int current_try = 0;
+    string username;
+    string guessed_word;
+    std::cout << "Please enter your username: ";
+    std::cin >> username;
     user_tries tries[MAX_TRIES];
-    char correct_word[WORD_SIZE+1] = "teste";
-    int colors[WORD_SIZE] = {RED,GREEN,YELLOW,BLUE,MAGENTA};
-    clrscr();
-    printRow(correct_word,colors);
-    cout << endl;
+    initializeUserTries(tries, MAX_TRIES);
+    while(current_try < MAX_TRIES)
+    {
+        clrscr();
+        printTries(tries);
+        cout << endl;
+        std::cout << "Guess the word: ";
+        std::cin >> tries[current_try].word;
+        current_try++;
+    }
+    printTries(tries);
 }
