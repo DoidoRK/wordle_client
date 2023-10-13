@@ -1,32 +1,41 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
 #include "config.h"
 #include "terminal_gui.h"
 
-void initializeUserTries(user_tries triesArray[MAX_TRIES], int numTries) {
-    string empty_word = "     ";
-    int standard_colors[WORD_SIZE] = {WHITE, WHITE, WHITE, WHITE, WHITE};
-    for (int i = 0; i < numTries; ++i) {
-        triesArray[i].word = empty_word;
-        memcpy(triesArray[i].colors, standard_colors, sizeof(standard_colors));
-    }
-}
-
 int main() {
-    int current_try = 0;
-    string username;
-    string guessed_word;
-    cout << "Please enter your username: ";
-    cin >> username;
-    user_tries tries[MAX_TRIES];
-    initializeUserTries(tries, MAX_TRIES);
-    while(current_try < MAX_TRIES)
+    int s0, s1, f, length, rval, i, N=30;
+    struct sockaddr_in server;
+    time_t ticks;
+    char buff[N];
+    s0=socket(AF_INET, SOCK_STREAM, 0);
+    if (s0<0)
     {
-        clrscr();
-        printTries(tries);
-        cout << endl;
-        cout << "Guess the word: ";
-        cin >> tries[current_try].word;
-        current_try++;
+        perror("opening stream socket");
+        exit(1);
     }
-    printTries(tries);
-    gotoxy(0,38);
+    
+    if (s0<0) {
+        perror("opening stream socket");
+        exit(1);
+    }
+
+    //Server Conection
+    bzero(&server, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = inet_addr(IP_SERVER);
+    if (connect(s0, (struct sockaddr *) &server, sizeof(server)) < 0 ) {
+        perror("connectando stream socket");
+        exit(0);
+    }
+    printf("Cliente: Aguardando a hora\n");
+    rval = recv(s0, &buff, sizeof(buff), 0);
+    printf("%s\n", buff);
+    printf("Cliente: terminei!\n");
+    return 0;
 }
