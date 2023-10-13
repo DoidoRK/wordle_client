@@ -1,20 +1,7 @@
-#include <iostream>
+#ifndef _TERMINAL_GUI_H_
+#define _TERMINAL_GUI_H_
 #include "conio_linux.h"
-#include <unistd.h>
-#include <string.h>
-
-using namespace std;
-
-#define WORD_SIZE 5
-#define SQUARE_SIZE 5
-#define MAX_TRIES 6
-#define USERNAME_LEN 64
-
-string correct_word = "teste";
-typedef struct tries_struct{
-    string word;
-    int colors[WORD_SIZE];
-} user_tries;
+#include "config.h"
 
 void printSquares(int startX, int startY, char character, int color) {
     setfontcolor(color);
@@ -53,31 +40,4 @@ void printTries(user_tries triesArray[MAX_TRIES]) {
     }
 }
 
-void initializeUserTries(user_tries triesArray[MAX_TRIES], int numTries) {
-    string empty_word = "     ";
-    int standard_colors[WORD_SIZE] = {WHITE, WHITE, WHITE, WHITE, WHITE};
-    for (int i = 0; i < numTries; ++i) {
-        triesArray[i].word = empty_word;
-        memcpy(triesArray[i].colors, standard_colors, sizeof(standard_colors));
-    }
-}
-
-int main() {
-    int current_try = 0;
-    string username;
-    string guessed_word;
-    std::cout << "Please enter your username: ";
-    std::cin >> username;
-    user_tries tries[MAX_TRIES];
-    initializeUserTries(tries, MAX_TRIES);
-    while(current_try < MAX_TRIES)
-    {
-        clrscr();
-        printTries(tries);
-        cout << endl;
-        std::cout << "Guess the word: ";
-        std::cin >> tries[current_try].word;
-        current_try++;
-    }
-    printTries(tries);
-}
+#endif /* _TERMINAL_GUI_H_ */
