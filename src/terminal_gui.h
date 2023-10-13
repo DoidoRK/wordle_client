@@ -3,6 +3,8 @@
 #include "conio_linux.h"
 #include "config.h"
 
+using namespace std;
+
 void printSquares(int startX, int startY, char character, int color) {
     setfontcolor(color);
     // Loop to print each row of the square
@@ -30,12 +32,12 @@ void printSquares(int startX, int startY, char character, int color) {
     }
 }
 
-void printTries(user_tries triesArray[MAX_TRIES]) {
+void printTries(attempt_t attempts[MAX_ATTEMPTS]) {
     for (int i = 0; i < WORD_SIZE; i++)
     {
-        for (int j = 0; j < MAX_TRIES; j++)
+        for (int j = 0; j < MAX_ATTEMPTS; j++)
         {
-            printSquares(i,j,triesArray[j].word[i],triesArray[i].colors[i]);
+            printSquares(i,j,attempts[j].word[i],attempts[i].colors[i]);
         }
     }
 }

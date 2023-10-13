@@ -6,37 +6,23 @@
 #include <unistd.h>
 #include "config.h"
 #include "terminal_gui.h"
+#include "utils.h"
 
 int main() {
-    int s0, s1, f, length, rval, i, N=30;
-    struct sockaddr_in server;
-    time_t ticks;
+    int server_socket, N=30;
+    struct sockaddr_in server_addr;
     char buff[N];
     clrscr();
     while (true)
     {
-        s0=socket(AF_INET, SOCK_STREAM, 0);
-        if (s0<0)
-        {
-            perror("opening stream socket");
-            exit(1);
-        }
-        
-        if (s0<0) {
-            perror("opening stream socket");
-            exit(1);
-        }
-
+        check((server_socket = socket(AF_INET, SOCK_STREAM, 0)), "Failed to open stream socket");
         //Server Conection
-        bzero(&server, sizeof(server));
-        server.sin_family = AF_INET;
-        server.sin_port = htons(PORT);
-        server.sin_addr.s_addr = inet_addr(IP_SERVER);
-        if (connect(s0, (struct sockaddr *) &server, sizeof(server)) < 0 ) {
-            perror("connectando stream socket");
-            exit(0);
-        }
-        rval = recv(s0, &buff, sizeof(buff), 0);
+        bzero(&server_addr, sizeof(server_addr));
+        server_addr.sin_family = AF_INET;
+        server_addr.sin_port = htons(PORT);
+        server_addr.sin_addr.s_addr = inet_addr(IP_SERVER);
+        check((connect(server_socket, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0),"Failed to connect to server");
+        recv(server_socket, &buff, sizeof(buff), 0);
         gotoxy(0,2);
         printf("%s", buff);
         sleep(1);
