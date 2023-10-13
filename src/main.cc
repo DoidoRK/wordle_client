@@ -12,30 +12,34 @@ int main() {
     struct sockaddr_in server;
     time_t ticks;
     char buff[N];
-    s0=socket(AF_INET, SOCK_STREAM, 0);
-    if (s0<0)
+    clrscr();
+    while (true)
     {
-        perror("opening stream socket");
-        exit(1);
-    }
-    
-    if (s0<0) {
-        perror("opening stream socket");
-        exit(1);
-    }
+        s0=socket(AF_INET, SOCK_STREAM, 0);
+        if (s0<0)
+        {
+            perror("opening stream socket");
+            exit(1);
+        }
+        
+        if (s0<0) {
+            perror("opening stream socket");
+            exit(1);
+        }
 
-    //Server Conection
-    bzero(&server, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
-    server.sin_addr.s_addr = inet_addr(IP_SERVER);
-    if (connect(s0, (struct sockaddr *) &server, sizeof(server)) < 0 ) {
-        perror("connectando stream socket");
-        exit(0);
+        //Server Conection
+        bzero(&server, sizeof(server));
+        server.sin_family = AF_INET;
+        server.sin_port = htons(PORT);
+        server.sin_addr.s_addr = inet_addr(IP_SERVER);
+        if (connect(s0, (struct sockaddr *) &server, sizeof(server)) < 0 ) {
+            perror("connectando stream socket");
+            exit(0);
+        }
+        rval = recv(s0, &buff, sizeof(buff), 0);
+        gotoxy(0,2);
+        printf("%s", buff);
+        sleep(1);
     }
-    printf("Cliente: Aguardando a hora\n");
-    rval = recv(s0, &buff, sizeof(buff), 0);
-    printf("%s\n", buff);
-    printf("Cliente: terminei!\n");
     return 0;
 }
