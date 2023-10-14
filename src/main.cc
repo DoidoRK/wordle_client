@@ -4,9 +4,13 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <string.h>
 #include "config.h"
-#include "terminal_gui.h"
-#include "utils.h"
+#include "libs/terminal_gui.h"
+#include "utils/network_utils.h"
+#include "utils/string_utils.h"
+
+// user_t user;
 
 int main() {
     int server_socket, N=30;
@@ -25,7 +29,8 @@ int main() {
         recv(server_socket, &buff, sizeof(buff), 0);
         gotoxy(0,2);
         printf("%s", buff);
-        sleep(1);
+        close(server_socket);
+        sleep(0.001);
     }
     return 0;
 }

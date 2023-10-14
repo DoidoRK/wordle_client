@@ -1,21 +1,10 @@
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef _STRING_UTILS_H_
+#define _STRING_UTILS_H_
 #include <iostream>
-#include <inttypes.h>
-#include <vector>
-#include <fstream>
 #include <string>
-#include "config.h"
+#include <vector>
 
 using namespace std;
-
-int check(int exp, const char *msg) {
-    if(exp == SOCKETERROR) {
-        perror(msg);
-        exit(1);
-    }
-    return 0;
-}
 
 vector<uint8_t> stringToUint8Vector(const string& str) {
     vector<uint8_t> result;
@@ -40,4 +29,13 @@ void printUint8Vector(const vector<uint8_t>& uint8Vector) {
     cout << endl;
 }
 
-#endif /* _UTILS_H_ */
+std::string toUpperCase(const std::string& input) {
+    std::string result = input;
+
+    for (char& c : result) {
+        c = std::toupper(c);
+    }
+
+    return result;
+}
+#endif /* _STRING_UTILS_H_ */

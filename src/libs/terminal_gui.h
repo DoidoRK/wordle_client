@@ -1,7 +1,11 @@
 #ifndef _TERMINAL_GUI_H_
 #define _TERMINAL_GUI_H_
+#include <iostream>
 #include "conio_linux.h"
-#include "config.h"
+#include "../wordle.h"
+
+//GUI settings
+#define SQUARE_SIZE 5
 
 using namespace std;
 
@@ -32,8 +36,8 @@ void printSquares(int startX, int startY, char character, int color) {
     }
 }
 
-void printTries(attempt_t attempts[MAX_ATTEMPTS]) {
-    for (int i = 0; i < WORD_SIZE; i++)
+void printTries(attempt_t attempts[MAX_ATTEMPTS], int wordSize) {
+    for (int i = 0; i < wordSize; i++)
     {
         for (int j = 0; j < MAX_ATTEMPTS; j++)
         {
