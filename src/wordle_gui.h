@@ -1,8 +1,8 @@
-#ifndef _TERMINAL_GUI_H_
-#define _TERMINAL_GUI_H_
+#ifndef _WORDLE_GUI_H_
+#define _WORDLE_GUI_H_
 #include <iostream>
-#include "conio_linux.h"
-#include "../wordle.h"
+#include "libs/conio_linux.h"
+#include "wordle_types.h"
 
 //GUI settings
 #define SQUARE_SIZE 5
@@ -46,4 +46,4 @@ void printTries(attempt_t attempts[MAX_ATTEMPTS], int wordSize) {
     }
 }
 
-#endif /* _TERMINAL_GUI_H_ */
+#endif /* _WORDLE_GUI_H_ */
