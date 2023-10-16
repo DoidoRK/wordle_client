@@ -1,7 +1,6 @@
 #ifndef _WORDLE_GUI_H_
 #define _WORDLE_GUI_H_
 #include <iostream>
-#include "libs/conio_linux.h"
 #include "wordle_types.h"
 
 //GUI settings
@@ -9,23 +8,23 @@
 
 using namespace std;
 
-void printSquares(int startX, int startY, char character, int color) {
-    setfontcolor(color);
+void printSquares(int start_x, int start_y, char character, int color) {
+    // setfontcolor(color);
     // Loop to print each row of the square
-    for (int row = startY*(SQUARE_SIZE+1); row < startY*(SQUARE_SIZE+1)+SQUARE_SIZE; ++row) {
+    for (int row = start_y*(SQUARE_SIZE+1); row < start_y*(SQUARE_SIZE+1)+SQUARE_SIZE; ++row) {
         // Position the cursor to the appropriate row and column
-        gotoxy(startX * (SQUARE_SIZE) + 1, row+1);
+        // gotoxy(start_x * (SQUARE_SIZE) + 1, row+1);
         
         // Print the first and last rows with '*' characters
-        if (row == startY* (SQUARE_SIZE + 1) || row == startY*(SQUARE_SIZE + 1)+(SQUARE_SIZE - 1)) {
+        if (row == start_y* (SQUARE_SIZE + 1) || row == start_y*(SQUARE_SIZE + 1)+(SQUARE_SIZE - 1)) {
             for (int col = 0; col < SQUARE_SIZE; ++col) {
                 cout << "*";
             }
         } else {
             // Print the middle rows with '*' at the edges and spaces inside
             cout << "*";
-            for (int col = startX+1; col < startX+(SQUARE_SIZE - 1); ++col) {
-                if(row == startY*(SQUARE_SIZE + 1)+(SQUARE_SIZE/2) && col == startX+(SQUARE_SIZE/2)){
+            for (int col = start_x+1; col < start_x+(SQUARE_SIZE - 1); ++col) {
+                if(row == start_y*(SQUARE_SIZE + 1)+(SQUARE_SIZE/2) && col == start_x+(SQUARE_SIZE/2)){
                     cout << character;
                 } else {
                     cout << " ";
@@ -36,8 +35,8 @@ void printSquares(int startX, int startY, char character, int color) {
     }
 }
 
-void printTries(attempt_t attempts[MAX_ATTEMPTS], int wordSize) {
-    for (int i = 0; i < wordSize; i++)
+void printTries(attempt_t attempts[MAX_ATTEMPTS], int word_size) {
+    for (int i = 0; i < word_size; i++)
     {
         for (int j = 0; j < MAX_ATTEMPTS; j++)
         {

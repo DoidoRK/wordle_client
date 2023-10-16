@@ -9,6 +9,7 @@
 #define HIGHSCORE_SIZE 5
 
 enum MESSAGES {
+    INVALID_MESSAGE_TYPE,
     //If the player is a new player, adds the player to the player list with score 0.
     //If the player already exists in the DB, returns the player score.
     //Sorts a new word for that player.
