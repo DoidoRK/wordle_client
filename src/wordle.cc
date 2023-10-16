@@ -1,11 +1,8 @@
 #include <string.h>
-#include "pthread.h"
-#include "wordle.h"
-// #include "wordle_gui.h"
+#include "communication.h"
 #include "utils/string_utils.h"
-#include "communication_h"
-
-pthread_t user_gui_thread, message_thread;
+#include "unistd.h"
+#include "wordle.h"
 
 using namespace std;
 
@@ -45,7 +42,7 @@ void loginPlayer(user_t player) {
             {
                 tmp[i] = username[i];
             }
-            memcpy(player.username,tmp,MAX_USERNAME_LEN);
+            player.username = tmp;
             cout << "Nome lido: " << player.username << endl;
             valid_username = true;
         }
@@ -61,7 +58,6 @@ void loginPlayer(user_t player) {
 }
 
 
-
 // void initializeUserTries(user_tries triesArray[MAX_TRIES], int numTries) {
 //     string empty_word = "     ";
 //     int standard_colors[WORD_SIZE] = {WHITE, WHITE, WHITE, WHITE, WHITE};
@@ -69,14 +65,4 @@ void loginPlayer(user_t player) {
 //         triesArray[i].word = empty_word;
 //         memcpy(triesArray[i].colors, standard_colors, sizeof(standard_colors));
 //     }
-// }
-
-
-
-// void startTimer(time_t &timer){
-//     int N=30;
-//     char buff[N];
-//     time_t ticks;
-//     ticks = time (NULL);
-//     snprintf (buff, sizeof (buff), "%.24s\r\n", ctime(&ticks));
 // }
