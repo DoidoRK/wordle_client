@@ -1,7 +1,8 @@
 #include <string.h>
+#include <unistd.h>
+#include <ncurses.h>
 #include "communication.h"
 #include "utils/string_utils.h"
-#include "unistd.h"
 #include "wordle.h"
 
 using namespace std;
@@ -58,11 +59,11 @@ void loginPlayer(user_t player) {
 }
 
 
-// void initializeUserTries(user_tries triesArray[MAX_TRIES], int numTries) {
-//     string empty_word = "     ";
-//     int standard_colors[WORD_SIZE] = {WHITE, WHITE, WHITE, WHITE, WHITE};
-//     for (int i = 0; i < numTries; ++i) {
-//         triesArray[i].word = empty_word;
-//         memcpy(triesArray[i].colors, standard_colors, sizeof(standard_colors));
-//     }
-// }
+void initializeAttempts(attempt_t attempts[MAX_ATTEMPTS], int max_attempt_n) {
+    string empty_word = "     ";
+    int standard_colors[WORD_SIZE] = {COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE};
+    for (int i = 0; i < max_attempt_n; ++i) {
+        attempts[i].word = empty_word;
+        memcpy(attempts[i].colors, standard_colors, sizeof(standard_colors));
+    }
+}

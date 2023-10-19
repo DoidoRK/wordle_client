@@ -22,7 +22,7 @@ void printTries(attempt_t attempts[MAX_ATTEMPTS], int word_size) {
     {
         for (int j = 0; j < MAX_ATTEMPTS; j++)
         {
-            printCharacters(i,j,attempts[j].word[i],attempts[i].colors[i]);
+            printCharacters(j,i,attempts[j].word[i],attempts[i].colors[i]);
         }
     }
     refresh();

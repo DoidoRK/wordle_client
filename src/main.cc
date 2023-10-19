@@ -1,16 +1,20 @@
-#include "config.h"
 #include <pthread.h>
 #include <chrono>
+#include <ncurses.h>
+#include <string.h>
+#include <unistd.h>
+// #include "communication.h"
+#include "config.h"
 #include "wordle_types.h"
 #include "wordle_gui.h"
-#include "unistd.h"
-#include "ncurses.h"
-#include "string.h"
+#include "wordle.h"
 
 user_t player;
 highscore_t highscore;
 attempt_t attempts[MAX_ATTEMPTS];
 int current_attempt = 0;
+
+data_packet_t message, result;
 
 bool quit_program = false;
 string right_word = "teste";
@@ -55,15 +59,16 @@ void * userInputThread(void * args) {
         int ch = getch();
         if (ch == 27) {  // ESC
             quit_program = true;
-        } else if (ch == 10 && current_row == num_rows) {  // Enter key
+        } else if (ch == 10 && current_col == num_cols) {  // Enter key
             pthread_mutex_lock(&user_attempt_mutex);
+            // sendMessageToServer();
             player.current_attempt.word = user_input_string;
             pthread_mutex_unlock(&user_attempt_mutex);
             current_col = 0;
             current_row++;
             clearAttemptMessage();
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
-            if (!user_input_string.empty() || current_col != 0) {
+            if (!user_input_string.empty() || current_col > 0) {
                 user_input_string.pop_back();
                 --current_col;
                 printUserInput(current_row, current_col, '-');
@@ -91,7 +96,7 @@ void * displayTimer(void *args) {
     while (!quit_program)
     {
         pthread_mutex_lock(&print_mutex);
-        mvprintw(0, 30, "Timer: %02d", (190 - (seconds % 60)));
+        mvprintw(0, 15, "Timer: %02d", (190 - (seconds % 60)));
         pthread_mutex_unlock(&print_mutex);
         refresh();
         sleep(1);
@@ -100,17 +105,17 @@ void * displayTimer(void *args) {
 }
 
 void * displayGUIThread(void *args){
-    int tries_printed = 0;
+    int attempts_printed = 0;
+    initializeAttempts(attempts,WORD_SIZE);
     while (!quit_program) {
-        if (tries_printed < 1)
-        {
-            pthread_mutex_lock(&print_mutex);
-            printTries(attempts,WORD_SIZE);
-            pthread_mutex_unlock(&print_mutex);
-            tries_printed++;
-        }
-        // displayTimer(&seconds);
-        sleep(0.06);
+        //Add condidional variable to tell the GUI thread to wake up when the user sends a word
+        //So it can update and show the user attempts
+        // if(update){
+        //     pthread_mutex_lock(&print_mutex);
+        //     printTries(attempts,WORD_SIZE);
+        //     pthread_mutex_unlock(&print_mutex);
+        //     attempts_printed++;
+        // }
     }
 }
 
