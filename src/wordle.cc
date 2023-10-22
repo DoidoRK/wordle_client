@@ -28,13 +28,9 @@ void loginPlayer(user_t *player) {
     string username;
     while (!valid_username)
     {
-        // clrscr();
-        // gotoxy(0,2);
         cout << "Please enter your name: ";
         cin >> username;
         if(MAX_USERNAME_LEN < username.length()){
-            // clrscr();
-            // gotoxy(0,1);
             cout << "Invalid username (name is too big)!";
         } else {
             const char *cstr;
@@ -55,23 +51,6 @@ void loginPlayer(user_t *player) {
     player->score = response.player.score;
 }
 
-
-void initializeAttempts(attempt_t attempts[MAX_ATTEMPTS], int max_attempt_n) {
-    char empty_word[WORD_SIZE] = {' ',' ',' ',' ',' '};
-    int standard_colors[WORD_SIZE] = {COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE};
-    for (int i = 0; i < max_attempt_n; ++i) {
-        strncpy(attempts[i].word, empty_word, WORD_SIZE);
-        memcpy(attempts[i].colors, standard_colors, sizeof(standard_colors));
-    }
-}
-
-void cleanAttempt(attempt_t attempts[MAX_ATTEMPTS], int current_attempt){
-    char empty_word[WORD_SIZE] = {' ',' ',' ',' ',' '};
-    int standard_colors[WORD_SIZE] = {COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE};
-    strncpy(attempts[current_attempt].word, empty_word, WORD_SIZE);
-    memcpy(attempts[current_attempt].colors, standard_colors, sizeof(standard_colors));
-}
-
 void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int* current_attempt, string user_input_string, attempt_t attempts[MAX_ATTEMPTS]) {
     data_packet_t attempt_message, attempt_result;
     player->attempt_n = *current_attempt;
@@ -80,7 +59,6 @@ void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int
     attempt_message.player = *player;
     attempt_message.message_type = PLAYER_ATTEMPT;
     sendMessageToServer(&attempt_message, &attempt_result);
-    cout << printMessage(attempt_result.message_type) << endl;
     *player = attempt_result.player;
     switch (attempt_result.message_type)
     {
@@ -120,4 +98,11 @@ void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int
                     attempt_result.player.current_attempt.word);
             break;
     }
+}
+
+void sendTimeOutToServer(user_t player){
+    data_packet_t attempt_message, attempt_result;
+    attempt_message.player = player;
+    attempt_message.message_type = PLAYER_NEW_WORD;
+    sendMessageToServer(&attempt_message, &attempt_result);
 }

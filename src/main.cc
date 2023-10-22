@@ -88,13 +88,20 @@ void * displayTimer(void *args) {
     while (!quit_program)
     {
         pthread_mutex_lock(&print_mutex);
-        mvprintw(0, 15, "Timer: %02d", (190 - (seconds % 60)));
+        mvprintw(0, 15, "Timer: %02d", (TIMER_LIMIT - (seconds % 60)));
         refresh();
         pthread_mutex_unlock(&print_mutex);
-        // If timer == 0
-        //Sends new word message for the server.
-        //Cleans up user attempts.
-        //Tells the user that the time is up in bottom message.
+        if(TIMER_LIMIT <= seconds){
+            pthread_mutex_lock(&user_attempt_mutex);
+            sendTimeOutToServer(player);
+            initializeAttempts(attempts, MAX_ATTEMPTS);
+            user_input_string.clear();
+            current_row = 0;
+            current_col = 0;
+            seconds = 0;
+            pthread_mutex_unlock(&user_attempt_mutex);
+            showAttemptMessage("O tempo acabou, nova palavra foi sorteada!");
+        }
         sleep(1);
         seconds++;
     }
@@ -103,22 +110,23 @@ void * displayTimer(void *args) {
 
 void * displayGUIThread(void *args){
     int attempts_printed = 0;
-    int word_size = WORD_SIZE;
-    initializeAttempts(attempts, word_size);
+    pthread_mutex_lock(&user_attempt_mutex);
+    initializeAttempts(attempts, MAX_ATTEMPTS);
+    pthread_mutex_unlock(&user_attempt_mutex);
     while (!quit_program) {
         pthread_mutex_lock(&print_mutex);
-        printTries(attempts, word_size);
+        printTries(attempts, WORD_SIZE);
         refresh();
         attempts_printed++;
         pthread_mutex_unlock(&print_mutex);
+        sleep(0.16);
     }
     return NULL;
 }
 
 int main() {
     loginPlayer(&player);   // Logs player.
-    cout << "Player logado!";
-    sleep(1);
+
     initscr();              // Initialize ncurses
     start_color();          // Habilita cores no terminal
 

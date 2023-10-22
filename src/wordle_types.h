@@ -9,6 +9,7 @@
 #define WORD_SIZE 5
 #define HIGHSCORE_PLAYER_NUM 5
 #define HIGHSCORE_SIZE 5
+#define TIMER_LIMIT 10
 
 using namespace std;
 
