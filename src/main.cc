@@ -87,6 +87,7 @@ void * userInputThread(void * args) {
         }
         refresh();
     }
+    return NULL;
 }
 
 // Function to display a timer
@@ -105,6 +106,7 @@ void * displayTimer(void *args) {
         sleep(1);
         seconds++;
     }
+    return NULL;
 }
 
 void * displayGUIThread(void *args){
@@ -117,6 +119,7 @@ void * displayGUIThread(void *args){
         pthread_mutex_unlock(&print_mutex);
         attempts_printed++;
     }
+    return NULL;
 }
 
 int main() {

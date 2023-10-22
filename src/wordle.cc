@@ -37,13 +37,10 @@ void loginPlayer(user_t *player) {
             // gotoxy(0,1);
             cout << "Invalid username (name is too big)!";
         } else {
-            char tmp[MAX_USERNAME_LEN];
+            const char *cstr;
             username = toUpperCase(username);
-            for (int i = 0; i < (int)username.length(); i++)
-            {
-                tmp[i] = username[i];
-            }
-            player->username = tmp;
+            cstr = username.c_str();
+            strncpy(player->username,cstr,MAX_USERNAME_LEN);
             cout << "Nome lido: " << player->username << endl;
             valid_username = true;
         }
@@ -60,27 +57,36 @@ void loginPlayer(user_t *player) {
 
 
 void initializeAttempts(attempt_t attempts[MAX_ATTEMPTS], int max_attempt_n) {
-    string empty_word = "     ";
+    char empty_word[WORD_SIZE] = {' ',' ',' ',' ',' '};
     int standard_colors[WORD_SIZE] = {COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE};
     for (int i = 0; i < max_attempt_n; ++i) {
-        attempts[i].word = empty_word;
+        strncpy(attempts[i].word, empty_word, WORD_SIZE);
         memcpy(attempts[i].colors, standard_colors, sizeof(standard_colors));
     }
+}
+
+void cleanAttempt(attempt_t attempts[MAX_ATTEMPTS], int current_attempt){
+    char empty_word[WORD_SIZE] = {' ',' ',' ',' ',' '};
+    int standard_colors[WORD_SIZE] = {COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE};
+    strncpy(attempts[current_attempt].word, empty_word, WORD_SIZE);
+    memcpy(attempts[current_attempt].colors, standard_colors, sizeof(standard_colors));
 }
 
 void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int* current_attempt, string user_input_string, attempt_t attempts[MAX_ATTEMPTS]) {
     data_packet_t attempt_message, attempt_result;
     player->attempt_n = *current_attempt;
-    player->current_attempt.word = user_input_string;
+    const char* cstr = user_input_string.c_str();
+    strncpy(player->current_attempt.word, cstr, WORD_SIZE);
     attempt_message.player = *player;
     attempt_message.message_type = PLAYER_ATTEMPT;
     sendMessageToServer(&attempt_message, &attempt_result);
+    cout << printMessage(attempt_result.message_type) << endl;
     *player = attempt_result.player;
     switch (attempt_result.message_type)
     {
         case INVALID_ATTEMPT_WORD:
             printf("Invalid attempt word!! \n\n\n\n");
-            attempts[*current_attempt].word = "     ";
+            cleanAttempt(attempts,*current_attempt);
             *current_col = 0;
             current_row = 0;
             //Shows invalid attempt message under the user interface.
@@ -89,6 +95,7 @@ void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int
         case PLAYER_NEW_WORD:
             printf("Player new word!! \n\n\n\n");
             //Clear attempts and resets current attempts
+            initializeAttempts(attempts,MAX_ATTEMPTS);
             *current_col = 0;
             current_row = 0;
             current_attempt = 0;
@@ -99,7 +106,7 @@ void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int
             printf("Player attempt!! \n\n\n\n");
             player->score = attempt_result.player.score;
             memcpy(attempts[*current_attempt].colors, attempt_result.player.current_attempt.colors, WORD_SIZE*sizeof(int));
-            attempts[*current_attempt].word = player->current_attempt.word;
+            memcpy(attempts[*current_attempt].word, player->current_attempt.word, WORD_SIZE*sizeof(char));
             *current_col = 0;
             current_row++;
             current_attempt++;
@@ -107,7 +114,7 @@ void sendAttemptToServer(int* current_row, int* current_col, user_t *player, int
 
         default:
             printf("Unknown message from server!! \n\n\n\n");
-            printf("Message: %d\nPlayer Name: %s\nPlayer Score: %s\nPlayer attempt word: %s\n",attempt_result.message_type,
+            printf("Message: %d\nPlayer Name: %s\nPlayer Score: %d\nPlayer attempt word: %s\n",attempt_result.message_type,
                     attempt_result.player.username,
                     attempt_result.player.score,
                     attempt_result.player.current_attempt.word);
