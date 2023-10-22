@@ -55,7 +55,7 @@ void *userInputThread(void *args) {
         if (ch == 27) {  // ESC
             quit_program = true;
         } else if (ch == 10 && current_col == num_cols) {  // Enter key
-            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, user_input_string, attempts));
+            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts));
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
             if (!user_input_string.empty() || current_col > 0) {
                 user_input_string.pop_back();

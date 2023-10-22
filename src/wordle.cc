@@ -48,16 +48,13 @@ void loginPlayer(user_t* player) {
     player->score = response.player.score;
 }
 
-const char* sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, string user_input_string, attempt_t attempts[MAX_ATTEMPTS]) {
+const char* sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, attempt_t attempts[MAX_ATTEMPTS]) {
     data_packet_t attempt_message, attempt_result;
     player->attempt_n = *current_attempt;
-    const char* cstr = user_input_string.c_str();
-    strncpy(player->current_attempt.word, cstr, WORD_SIZE);
+    strncpy(player->current_attempt.word, attempts[*current_attempt].word, WORD_SIZE);
     attempt_message.player = *player;
     attempt_message.message_type = PLAYER_ATTEMPT;
     sendMessageToServer(&attempt_message, &attempt_result);
-    player->current_attempt = attempt_result.player.current_attempt;
-    player->score = attempt_result.player.score;
     switch (attempt_result.message_type) {
         case INVALID_ATTEMPT_WORD:
             cleanAttempt(attempts, *current_attempt);
