@@ -9,7 +9,7 @@
 #define WORD_SIZE 5
 #define HIGHSCORE_PLAYER_NUM 5
 #define HIGHSCORE_SIZE 5
-#define TIMER_LIMIT 10
+#define TIMER_LIMIT 190
 
 using namespace std;
 
@@ -19,11 +19,6 @@ enum MESSAGES {
     //If the word that the player sended isn't in the wordbank
     //The player attempt shouldn't count
     INVALID_ATTEMPT_WORD,
-
-    //If the player is a new player, adds the player to the player list with score 0.
-    //If the player already exists in the DB, returns the player score.
-    //Sorts a new word for that player.
-    PLAYER_JOINED,
 
     //If the player failed to guess the right word, the server draws a new word for him.
     //If the player succeeded to guess the right word, the server adds to the player score and draws a new word

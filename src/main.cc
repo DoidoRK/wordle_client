@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <chrono>
 #include <ncurses.h>
 #include <string.h>
 #include <unistd.h>
@@ -31,14 +30,14 @@ string user_input_string;
 int current_row = 0;
 int current_col = 0;
 
-void showAttemptMessage(char message[]){
+void showMessageFromServer(const char message[]) {
     pthread_mutex_lock(&print_mutex);
     mvprintw(7, 0, "%s", message);
     refresh();
     pthread_mutex_unlock(&print_mutex);
 }
 
-void clearAttemptMessage(){
+void clearAttemptMessage() {
     pthread_mutex_lock(&print_mutex);
     move(7, 0);
     clrtoeol();
@@ -47,7 +46,7 @@ void clearAttemptMessage(){
 }
 
 // Function to capture user input
-void * userInputThread(void * args) {
+void *userInputThread(void *args) {
     const int num_rows = MAX_ATTEMPTS;
     const int num_cols = WORD_SIZE;
     while (!quit_program) {
@@ -56,25 +55,24 @@ void * userInputThread(void * args) {
         if (ch == 27) {  // ESC
             quit_program = true;
         } else if (ch == 10 && current_col == num_cols) {  // Enter key
-            sendAttemptToServer(&current_row, &current_col , &player, &current_attempt,user_input_string, attempts);
-            clearAttemptMessage();
+            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, user_input_string, attempts));
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
             if (!user_input_string.empty() || current_col > 0) {
                 user_input_string.pop_back();
-                attempts[current_attempt].word[current_col-1] = '-';
+                attempts[current_attempt].word[current_col - 1] = '-';
                 --current_col;
                 clearAttemptMessage();
             }
-        } else if(isalpha(ch) && current_col < num_cols) {
+        } else if (isalpha(ch) && current_col < num_cols) {
             user_input_string.push_back(ch);
             attempts[current_attempt].word[current_col] = ch;
             current_col++;
             clearAttemptMessage();
         }
-        if (current_col == num_cols){
-            showAttemptMessage("Pressione enter para enviar a palavra");
+        if (current_col == num_cols) {
+            showMessageFromServer("Pressione enter para enviar a palavra");
         }
-        if (current_row == num_rows){
+        if (current_row == num_rows) {
             quit_program = true;
         }
         pthread_mutex_unlock(&user_attempt_mutex);
@@ -83,24 +81,23 @@ void * userInputThread(void * args) {
 }
 
 // Function to display a timer
-void * displayTimer(void *args) {
+void *displayTimer(void *args) {
     int seconds = 0;
-    while (!quit_program)
-    {
+    while (!quit_program) {
         pthread_mutex_lock(&print_mutex);
         mvprintw(0, 15, "Timer: %02d", (TIMER_LIMIT - (seconds % 60)));
         refresh();
         pthread_mutex_unlock(&print_mutex);
-        if(TIMER_LIMIT <= seconds){
+        if (TIMER_LIMIT <= seconds) {
             pthread_mutex_lock(&user_attempt_mutex);
-            sendTimeOutToServer(player);
+            clearAttemptMessage();
+            showMessageFromServer(sendTimeOutToServer(player));
             initializeAttempts(attempts, MAX_ATTEMPTS);
             user_input_string.clear();
             current_row = 0;
             current_col = 0;
             seconds = 0;
             pthread_mutex_unlock(&user_attempt_mutex);
-            showAttemptMessage("O tempo acabou, nova palavra foi sorteada!");
         }
         sleep(1);
         seconds++;
@@ -108,7 +105,7 @@ void * displayTimer(void *args) {
     return NULL;
 }
 
-void * displayGUIThread(void *args){
+void *displayGUIThread(void *args) {
     int attempts_printed = 0;
     pthread_mutex_lock(&user_attempt_mutex);
     initializeAttempts(attempts, MAX_ATTEMPTS);
@@ -125,10 +122,10 @@ void * displayGUIThread(void *args){
 }
 
 int main() {
-    loginPlayer(&player);   // Logs player.
+    loginPlayer(&player);   // Gets player data.
 
     initscr();              // Initialize ncurses
-    start_color();          // Habilita cores no terminal
+    start_color();          // Enables terminal colors.
 
     cbreak();               // Line buffering disabled
     noecho();               // Don't echo user input
