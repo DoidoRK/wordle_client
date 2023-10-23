@@ -47,8 +47,7 @@ void clearAttemptMessage() {
 
 // Function to capture user input
 void *userInputThread(void *args) {
-    const int num_rows = MAX_ATTEMPTS;
-    const int num_cols = WORD_SIZE;
+    const int num_cols = WORD_SIZE; //There will be a ending string character in the string.
     while (!quit_program) {
         int ch = getch();
         pthread_mutex_lock(&user_attempt_mutex);
@@ -56,7 +55,7 @@ void *userInputThread(void *args) {
             quit_program = true;
         } else if (ch == 10 && current_col == num_cols) {  // Enter key
             clearAttemptMessage();
-            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts));
+            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts, WORD_SIZE, MAX_ATTEMPTS));
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
             if (!user_input_string.empty() || current_col > 0) {
                 user_input_string.pop_back();

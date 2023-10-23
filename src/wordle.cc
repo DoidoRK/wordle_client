@@ -45,7 +45,7 @@ void loginPlayer(user_t* player) {
     player->score = response.player.score;
 }
 
-const char* sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, attempt_t attempts[MAX_ATTEMPTS]) {
+const char* sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, attempt_t attempts[MAX_ATTEMPTS], size_t word_size, size_t max_attempts) {
     data_packet_t attempt_message, attempt_result;
     player->attempt_n = *current_attempt;
     strncpy(player->current_attempt.word, attempts[*current_attempt].word, WORD_SIZE);
@@ -62,13 +62,13 @@ const char* sendAttemptToServer(int* current_row, int* current_col, user_t* play
             *current_col = 0;
             *current_row = 0;
             *current_attempt = 0;
-            initializeAttempts(attempts, MAX_ATTEMPTS);
+            initializeAttempts(attempts, max_attempts);
             return "Uma nova palavra foi sorteada para o jogador.";
 
         case PLAYER_ATTEMPT:
             player->score = attempt_result.player.score;
-            memcpy(attempts[*current_attempt].colors, attempt_result.player.current_attempt.colors, WORD_SIZE * sizeof(int));
-            strncpy(attempts[*current_attempt].word, player->current_attempt.word, WORD_SIZE);
+            memcpy(attempts[*current_attempt].colors, attempt_result.player.current_attempt.colors, word_size * sizeof(int));
+            strncpy(attempts[*current_attempt].word, player->current_attempt.word, word_size);
             *current_col = 0;
             (*current_row)++;
             (*current_attempt)++;
