@@ -103,7 +103,6 @@ void *displayTimer(void *args) {
 }
 
 void *displayGUIThread(void *args) {
-    int attempts_printed = 0;
     pthread_mutex_lock(&user_attempt_mutex);
     initializeAttempts(attempts, MAX_ATTEMPTS);
     pthread_mutex_unlock(&user_attempt_mutex);
@@ -111,9 +110,8 @@ void *displayGUIThread(void *args) {
         pthread_mutex_lock(&print_mutex);
         printTries(attempts, WORD_SIZE);
         refresh();
-        attempts_printed++;
-        pthread_mutex_unlock(&print_mutex);
         sleep(0.16);
+        pthread_mutex_unlock(&print_mutex);
     }
     return NULL;
 }
@@ -121,13 +119,17 @@ void *displayGUIThread(void *args) {
 int main() {
     loginPlayer(&player);   // Gets player data.
 
-    initscr();              // Initialize ncurses
-    start_color();          // Enables terminal colors.
+    initscr(); // Initialize NCurses
+    start_color(); // Enable color support
+    noecho(); // Don't echo user input
+    keypad(stdscr, TRUE); // Enable special keys
+    curs_set(0); // Hide the cursor
 
-    cbreak();               // Line buffering disabled
-    noecho();               // Don't echo user input
-    keypad(stdscr, TRUE);   // Enable special keys
-    curs_set(0);            // Hide cursors
+    // Initialize colors
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(7, COLOR_WHITE, COLOR_BLACK);
 
     if (pthread_create(&user_input_thread, NULL, userInputThread, NULL) != 0) {
         endwin();
