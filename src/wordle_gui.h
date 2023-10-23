@@ -7,14 +7,25 @@
 using namespace std;
 
 void printCharacters(int start_y, int start_x, char character, int color) {
-    init_pair(1, color, COLOR_BLACK);  // Define a color pair with red text on a black background
-    attron(COLOR_PAIR(1));  // Enable the color pair
-    if(character == ' '){
+    // Define color pairs
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_WHITE, COLOR_BLACK);
+
+    // Determine which color pair to use based on the 'color' variable
+    int selectedColorPair = 4;  // Default to white on black
+    if (color >= 1 && color <= 3) {
+        selectedColorPair = color;
+    }
+
+    attron(COLOR_PAIR(selectedColorPair));  // Enable the selected color pair
+    if (character == ' ') {
         mvprintw(start_y, start_x, "-");
     } else {
         mvprintw(start_y, start_x, "%c", character);
     }
-    attroff(COLOR_PAIR(1));  // Disable the color pair
+    attroff(COLOR_PAIR(selectedColorPair));  // Disable the color pair
 }
 
 void printTries(attempt_t attempts[MAX_ATTEMPTS], int word_size) {

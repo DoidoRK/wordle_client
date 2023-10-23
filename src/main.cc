@@ -55,6 +55,7 @@ void *userInputThread(void *args) {
         if (ch == 27) {  // ESC
             quit_program = true;
         } else if (ch == 10 && current_col == num_cols) {  // Enter key
+            clearAttemptMessage();
             showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts));
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
             if (!user_input_string.empty() || current_col > 0) {
@@ -71,9 +72,6 @@ void *userInputThread(void *args) {
         }
         if (current_col == num_cols) {
             showMessageFromServer("Pressione enter para enviar a palavra");
-        }
-        if (current_row == num_rows) {
-            quit_program = true;
         }
         pthread_mutex_unlock(&user_attempt_mutex);
     }

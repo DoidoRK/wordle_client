@@ -42,9 +42,6 @@ void loginPlayer(user_t* player) {
     message.message_type = PLAYER_NEW_WORD;
     message.player = *player;
     sendMessageToServer(&message, &response);
-    cout << "Mensagem recebida: " << printMessage(response.message_type) << endl;
-    cout << "Player recebido: " << response.player.username << endl;
-    cout << "Player score: " << response.player.score << endl;
     player->score = response.player.score;
 }
 
@@ -59,7 +56,6 @@ const char* sendAttemptToServer(int* current_row, int* current_col, user_t* play
         case INVALID_ATTEMPT_WORD:
             cleanAttempt(attempts, *current_attempt);
             *current_col = 0;
-            *current_row = 0;
             return "Palavra inválida! A palavra não está no banco de dados.";
 
         case PLAYER_NEW_WORD:
@@ -83,7 +79,7 @@ const char* sendAttemptToServer(int* current_row, int* current_col, user_t* play
                    attempt_result.player.username,
                    attempt_result.player.score,
                    attempt_result.player.current_attempt.word);
-            return "Ocorreu um erro!";
+            return "Um erro desconhecido de comunicação com o servidor ocorreu!";
     }
 }
 
