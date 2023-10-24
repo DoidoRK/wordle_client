@@ -103,11 +103,13 @@ void *displayTimer(void *args) {
 
 void *displayRankingThread(void *args){
     while (!quit_program) {
+        pthread_mutex_lock(&user_attempt_mutex);
         pthread_mutex_lock(&print_mutex);
-        getPlayerRankingFromServer(highscore);
+        getPlayerRankingFromServer(highscore, &player);
         printRanking(1, 15, player, highscore, HIGHSCORE_SIZE);
         refresh();
         pthread_mutex_unlock(&print_mutex);
+        pthread_mutex_unlock(&user_attempt_mutex);
         sleep(1);
     }
     return NULL;
@@ -118,10 +120,12 @@ void *displayGUIThread(void *args) {
     initializeAttempts(attempts, MAX_ATTEMPTS);
     pthread_mutex_unlock(&user_attempt_mutex);
     while (!quit_program) {
+        pthread_mutex_lock(&user_attempt_mutex);
         pthread_mutex_lock(&print_mutex);
         printTries(attempts, WORD_SIZE);
         refresh();
         pthread_mutex_unlock(&print_mutex);
+        pthread_mutex_unlock(&user_attempt_mutex);
         sleep(0.16);
     }
     return NULL;

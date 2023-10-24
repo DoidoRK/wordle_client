@@ -8,6 +8,6 @@ void loginPlayer(user_t *player);
 void initializeAttempts(attempt_t attempts[MAX_ATTEMPTS], int max_attempt_n);
 const char* sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, attempt_t attempts[MAX_ATTEMPTS], size_t word_size, size_t max_attempts);
 const char* sendTimeOutToServer(user_t player);
-void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE]);
+void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE], user_t* player);
 
 #endif /* _WORDLE_H_ */

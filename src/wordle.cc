@@ -90,7 +90,7 @@ const char* sendTimeOutToServer(user_t player) {
     return "O tempo acabou, uma nova palavra foi sorteada!";
 }
 
-void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE]){
+void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE], user_t* player){
     data_packet_t highscore_message, highscore_result;
     highscore_message.message_type = GET_HIGHSCORE;
     sendMessageToServer(&highscore_message, &highscore_result);
@@ -98,4 +98,5 @@ void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE]){
         strncpy(highscore[i].username, highscore_result.highscores[i].username, MAX_USERNAME_LEN);
         highscore[i].score = highscore_result.highscores[i].score;
     }
+    player->score = highscore_result.player.score;
 }
