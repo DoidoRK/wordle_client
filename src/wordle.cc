@@ -67,7 +67,6 @@ const char* sendAttemptToServer(int* current_row, int* current_col, user_t* play
 
         case PLAYER_ATTEMPT:
             player->score = attempt_result.player.score;
-            memcpy(attempts[*current_attempt].colors, attempt_result.player.current_attempt.colors, word_size * sizeof(int));
             strncpy(attempts[*current_attempt].word, player->current_attempt.word, word_size);
             *current_col = 0;
             (*current_row)++;
@@ -89,4 +88,14 @@ const char* sendTimeOutToServer(user_t player) {
     attempt_message.message_type = PLAYER_NEW_WORD;
     sendMessageToServer(&attempt_message, &attempt_result);
     return "O tempo acabou, uma nova palavra foi sorteada!";
+}
+
+void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE]){
+    data_packet_t highscore_message, highscore_result;
+    highscore_message.message_type = GET_HIGHSCORE;
+    sendMessageToServer(&highscore_message, &highscore_result);
+    for (int i = 0; i < HIGHSCORE_SIZE; i++) {
+        strncpy(highscore[i].username, highscore_result.highscores[i].username, MAX_USERNAME_LEN);
+        highscore[i].score = highscore_result.highscores[i].score;
+    }
 }

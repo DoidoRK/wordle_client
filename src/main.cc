@@ -8,16 +8,15 @@
 #include "wordle.h"
 
 user_t player;
-highscore_t highscore;
+highscore_t highscore[HIGHSCORE_SIZE];
 attempt_t attempts[MAX_ATTEMPTS];
 int current_attempt = 0;
 
 data_packet_t message, result;
 
 bool quit_program = false;
-string right_word = "teste";
 
-pthread_t user_input_thread, timer_thread, gui_thread;
+pthread_t user_input_thread, timer_thread, gui_thread, ranking_thread;
 
 // Mutex for accessing shared data
 pthread_mutex_t user_attempt_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -32,14 +31,14 @@ int current_col = 0;
 
 void showMessageFromServer(const char message[]) {
     pthread_mutex_lock(&print_mutex);
-    mvprintw(7, 0, "%s", message);
+    mvprintw(15, 0, "%s", message);
     refresh();
     pthread_mutex_unlock(&print_mutex);
 }
 
 void clearAttemptMessage() {
     pthread_mutex_lock(&print_mutex);
-    move(7, 0);
+    move(15, 0);
     clrtoeol();
     refresh();
     pthread_mutex_unlock(&print_mutex);
@@ -102,6 +101,18 @@ void *displayTimer(void *args) {
     return NULL;
 }
 
+void *displayRankingThread(void *args){
+    while (!quit_program) {
+        pthread_mutex_lock(&print_mutex);
+        getPlayerRankingFromServer(highscore);
+        printRanking(1, 15, player, highscore, HIGHSCORE_SIZE);
+        refresh();
+        pthread_mutex_unlock(&print_mutex);
+        sleep(1);
+    }
+    return NULL;
+}
+
 void *displayGUIThread(void *args) {
     pthread_mutex_lock(&user_attempt_mutex);
     initializeAttempts(attempts, MAX_ATTEMPTS);
@@ -110,8 +121,8 @@ void *displayGUIThread(void *args) {
         pthread_mutex_lock(&print_mutex);
         printTries(attempts, WORD_SIZE);
         refresh();
-        sleep(0.16);
         pthread_mutex_unlock(&print_mutex);
+        sleep(0.16);
     }
     return NULL;
 }
@@ -126,10 +137,10 @@ int main() {
     curs_set(0); // Hide the cursor
 
     // Initialize colors
-    init_pair(1, COLOR_RED, COLOR_BLACK);
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(7, COLOR_WHITE, COLOR_BLACK);
+    init_pair(COLOR_RED, COLOR_WHITE, COLOR_RED);
+    init_pair(COLOR_GREEN, COLOR_WHITE, COLOR_GREEN);
+    init_pair(COLOR_YELLOW, COLOR_WHITE, COLOR_YELLOW);
+    init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
 
     if (pthread_create(&user_input_thread, NULL, userInputThread, NULL) != 0) {
         endwin();
@@ -149,6 +160,12 @@ int main() {
         return 1;
     }
 
+    if (pthread_create(&ranking_thread, NULL, displayRankingThread, NULL) != 0) {
+        endwin();
+        fprintf(stderr, "Failed to create the ranking thread\n");
+        return 1;
+    }
+
     if (pthread_join(user_input_thread, NULL) != 0) {
         fprintf(stderr, "Failed to join the input thread\n");
         return 1;
@@ -160,6 +177,11 @@ int main() {
     }
 
     if (pthread_join(timer_thread, NULL) != 0) {
+        fprintf(stderr, "Failed to join the timer thread\n");
+        return 1;
+    }
+
+    if (pthread_join(ranking_thread, NULL) != 0) {
         fprintf(stderr, "Failed to join the timer thread\n");
         return 1;
     }
