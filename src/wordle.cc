@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const char* message_strings[] = {
+const string message_strings[] = {
     "INVALID_MESSAGE_TYPE",
     "INVALID_ATTEMPT_WORD",
     "PLAYER_NEW_WORD",
@@ -45,7 +45,7 @@ void loginPlayer(user_t* player) {
     player->score = response.player.score;
 }
 
-const char* sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, attempt_t attempts[MAX_ATTEMPTS], size_t word_size, size_t max_attempts) {
+const string sendAttemptToServer(int* current_row, int* current_col, user_t* player, int* current_attempt, attempt_t attempts[MAX_ATTEMPTS], size_t word_size, size_t max_attempts, int* seconds) {
     data_packet_t attempt_message, attempt_result;
     player->attempt_n = *current_attempt;
     strncpy(player->current_attempt.word, attempts[*current_attempt].word, WORD_SIZE);
@@ -63,6 +63,7 @@ const char* sendAttemptToServer(int* current_row, int* current_col, user_t* play
             *current_row = 0;
             *current_attempt = 0;
             initializeAttempts(attempts, max_attempts);
+            *seconds = 0;
             return "Uma nova palavra foi sorteada para o jogador.";
 
         case PLAYER_ATTEMPT:
@@ -82,7 +83,7 @@ const char* sendAttemptToServer(int* current_row, int* current_col, user_t* play
     }
 }
 
-const char* sendTimeOutToServer(user_t player) {
+const string sendTimeOutToServer(user_t player) {
     data_packet_t attempt_message, attempt_result;
     attempt_message.player = player;
     attempt_message.message_type = PLAYER_NEW_WORD;

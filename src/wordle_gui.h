@@ -19,7 +19,7 @@ void printCharacters(int start_y, int start_x, char character, int color) {
     } else {
         mvaddch(start_y, start_x, character);
     }
-    attroff(COLOR_PAIR(selectedColorPair));
+    // attroff(COLOR_PAIR(selectedColorPair));
 }
 
 void printTries(attempt_t attempts[MAX_ATTEMPTS], int word_size) {

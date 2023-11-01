@@ -11,6 +11,8 @@ user_t player;
 highscore_t highscore[HIGHSCORE_SIZE];
 attempt_t attempts[MAX_ATTEMPTS];
 int current_attempt = 0;
+int seconds = 0;
+string gui_message = "";
 
 data_packet_t message, result;
 
@@ -20,7 +22,7 @@ pthread_t user_input_thread, timer_thread, gui_thread, ranking_thread;
 
 // Mutex for accessing shared data
 pthread_mutex_t user_attempt_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t gui_printing_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 using namespace std;
 
@@ -29,20 +31,15 @@ string user_input_string;
 int current_row = 0;
 int current_col = 0;
 
-void showMessageFromServer(const char message[]) {
-    pthread_mutex_lock(&print_mutex);
-    mvprintw(15, 0, "%s", message);
-    refresh();
-    pthread_mutex_unlock(&print_mutex);
+void clearAttemptMessage() {
+    gui_message = "                                                                            ";
 }
 
-void clearAttemptMessage() {
-    pthread_mutex_lock(&print_mutex);
-    move(15, 0);
-    clrtoeol();
-    refresh();
-    pthread_mutex_unlock(&print_mutex);
+void showMessageFromServer(string message) {
+    clearAttemptMessage();
+    gui_message = message;
 }
+
 
 // Function to capture user input
 void *userInputThread(void *args) {
@@ -54,7 +51,9 @@ void *userInputThread(void *args) {
             quit_program = true;
         } else if (ch == 10 && current_col == num_cols) {  // Enter key
             clearAttemptMessage();
-            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts, WORD_SIZE, MAX_ATTEMPTS));
+            pthread_mutex_lock(&gui_printing_mutex);
+            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts, WORD_SIZE, MAX_ATTEMPTS, &seconds));
+            pthread_mutex_unlock(&gui_printing_mutex);
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
             if (!user_input_string.empty() || current_col > 0) {
                 user_input_string.pop_back();
@@ -69,7 +68,9 @@ void *userInputThread(void *args) {
             clearAttemptMessage();
         }
         if (current_col == num_cols) {
+            pthread_mutex_lock(&gui_printing_mutex);
             showMessageFromServer("Pressione enter para enviar a palavra");
+            pthread_mutex_unlock(&gui_printing_mutex);
         }
         pthread_mutex_unlock(&user_attempt_mutex);
     }
@@ -78,16 +79,12 @@ void *userInputThread(void *args) {
 
 // Function to display a timer
 void *displayTimer(void *args) {
-    int seconds = 0;
     while (!quit_program) {
-        pthread_mutex_lock(&print_mutex);
-        mvprintw(0, 15, "Timer: %02d", (TIMER_LIMIT - (seconds % 60)));
-        refresh();
-        pthread_mutex_unlock(&print_mutex);
         if (TIMER_LIMIT <= seconds) {
             pthread_mutex_lock(&user_attempt_mutex);
-            clearAttemptMessage();
+            pthread_mutex_lock(&gui_printing_mutex);
             showMessageFromServer(sendTimeOutToServer(player));
+            pthread_mutex_unlock(&gui_printing_mutex);
             initializeAttempts(attempts, MAX_ATTEMPTS);
             user_input_string.clear();
             current_row = 0;
@@ -104,11 +101,7 @@ void *displayTimer(void *args) {
 void *displayRankingThread(void *args){
     while (!quit_program) {
         pthread_mutex_lock(&user_attempt_mutex);
-        pthread_mutex_lock(&print_mutex);
         getPlayerRankingFromServer(highscore, &player);
-        printRanking(1, 15, player, highscore, HIGHSCORE_SIZE);
-        refresh();
-        pthread_mutex_unlock(&print_mutex);
         pthread_mutex_unlock(&user_attempt_mutex);
         sleep(1);
     }
@@ -121,10 +114,11 @@ void *displayGUIThread(void *args) {
     pthread_mutex_unlock(&user_attempt_mutex);
     while (!quit_program) {
         pthread_mutex_lock(&user_attempt_mutex);
-        pthread_mutex_lock(&print_mutex);
-        printTries(attempts, WORD_SIZE);
+        printTries(attempts, WORD_SIZE);    //Prints user tries.
+        printRanking(1, 15, player, highscore, HIGHSCORE_SIZE); //Print Highscore table
+        mvprintw(0, 15, "Timer: %02d", (TIMER_LIMIT - (seconds % 60))); //Prints timer.
+        mvprintw(15, 0, "%s", gui_message.c_str()); //Prints message.
         refresh();
-        pthread_mutex_unlock(&print_mutex);
         pthread_mutex_unlock(&user_attempt_mutex);
         sleep(0.16);
     }
