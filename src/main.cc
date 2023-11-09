@@ -22,7 +22,8 @@ pthread_t user_input_thread, timer_thread, gui_thread, ranking_thread;
 
 // Mutex for accessing shared data
 pthread_mutex_t user_attempt_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t gui_printing_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t highscore_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t gui_message_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 using namespace std;
 
@@ -32,12 +33,15 @@ int current_row = 0;
 int current_col = 0;
 
 void clearAttemptMessage() {
-    gui_message = "                                                                            ";
+    pthread_mutex_lock(&gui_message_mutex);
+    gui_message.clear();
+    pthread_mutex_unlock(&gui_message_mutex);
 }
 
-void showMessageFromServer(string message) {
-    clearAttemptMessage();
+void showGuiMessage(string message) {
+    pthread_mutex_lock(&gui_message_mutex);
     gui_message = message;
+    pthread_mutex_unlock(&gui_message_mutex);
 }
 
 
@@ -46,33 +50,34 @@ void *userInputThread(void *args) {
     const int num_cols = WORD_SIZE; //There will be a ending string character in the string.
     while (!quit_program) {
         int ch = getch();
-        pthread_mutex_lock(&user_attempt_mutex);
         if (ch == 27) {  // ESC
             quit_program = true;
         } else if (ch == 10 && current_col == num_cols) {  // Enter key
-            clearAttemptMessage();
-            pthread_mutex_lock(&gui_printing_mutex);
-            showMessageFromServer(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts, WORD_SIZE, MAX_ATTEMPTS, &seconds));
-            pthread_mutex_unlock(&gui_printing_mutex);
+            pthread_mutex_lock(&user_attempt_mutex);
+            showGuiMessage(sendAttemptToServer(&current_row, &current_col, &player, &current_attempt, attempts, WORD_SIZE, MAX_ATTEMPTS, &seconds));
+            pthread_mutex_unlock(&user_attempt_mutex);
         } else if (ch == KEY_BACKSPACE) {  // Backspace key
             if (!user_input_string.empty() || current_col > 0) {
+                pthread_mutex_lock(&user_attempt_mutex);
                 user_input_string.pop_back();
                 attempts[current_attempt].word[current_col - 1] = '-';
                 --current_col;
                 clearAttemptMessage();
+                pthread_mutex_unlock(&user_attempt_mutex);
             }
         } else if (isalpha(ch) && current_col < num_cols) {
+            pthread_mutex_lock(&user_attempt_mutex);
             user_input_string.push_back(ch);
             attempts[current_attempt].word[current_col] = ch;
             current_col++;
             clearAttemptMessage();
+            pthread_mutex_unlock(&user_attempt_mutex);
         }
         if (current_col == num_cols) {
-            pthread_mutex_lock(&gui_printing_mutex);
-            showMessageFromServer("Pressione enter para enviar a palavra");
-            pthread_mutex_unlock(&gui_printing_mutex);
+            pthread_mutex_lock(&user_attempt_mutex);
+            showGuiMessage("Pressione enter para enviar a palavra");
+            pthread_mutex_unlock(&user_attempt_mutex);
         }
-        pthread_mutex_unlock(&user_attempt_mutex);
     }
     return NULL;
 }
@@ -81,16 +86,14 @@ void *userInputThread(void *args) {
 void *displayTimer(void *args) {
     while (!quit_program) {
         if (TIMER_LIMIT <= seconds) {
+            showGuiMessage(sendTimeOutToServer(player));
             pthread_mutex_lock(&user_attempt_mutex);
-            pthread_mutex_lock(&gui_printing_mutex);
-            showMessageFromServer(sendTimeOutToServer(player));
-            pthread_mutex_unlock(&gui_printing_mutex);
             initializeAttempts(attempts, MAX_ATTEMPTS);
             user_input_string.clear();
             current_row = 0;
             current_col = 0;
-            seconds = 0;
             pthread_mutex_unlock(&user_attempt_mutex);
+            seconds = 0;
         }
         sleep(1);
         seconds++;
@@ -100,9 +103,9 @@ void *displayTimer(void *args) {
 
 void *displayRankingThread(void *args){
     while (!quit_program) {
-        pthread_mutex_lock(&user_attempt_mutex);
+        pthread_mutex_lock(&highscore_mutex);
         getPlayerRankingFromServer(highscore, &player);
-        pthread_mutex_unlock(&user_attempt_mutex);
+        pthread_mutex_unlock(&highscore_mutex);
         sleep(1);
     }
     return NULL;
@@ -115,11 +118,18 @@ void *displayGUIThread(void *args) {
     while (!quit_program) {
         pthread_mutex_lock(&user_attempt_mutex);
         printTries(attempts, WORD_SIZE);    //Prints user tries.
+        if(!gui_message.empty()){
+            mvprintw(15, 0, "%s", gui_message.c_str()); //Prints message
+        } else {
+            move(15, 0);          // move to begining of line
+            clrtoeol();          // clear line
+        }
+        pthread_mutex_lock(&highscore_mutex);
         printRanking(1, 15, player, highscore, HIGHSCORE_SIZE); //Print Highscore table
-        mvprintw(0, 15, "Timer: %02d", (TIMER_LIMIT - (seconds % 60))); //Prints timer.
-        mvprintw(15, 0, "%s", gui_message.c_str()); //Prints message.
-        refresh();
+        pthread_mutex_unlock(&highscore_mutex);
+        mvprintw(0, 15, "Timer: %02d", (TIMER_LIMIT - (seconds % 60))); //Prints timer
         pthread_mutex_unlock(&user_attempt_mutex);
+        refresh();
         sleep(0.16);
     }
     return NULL;

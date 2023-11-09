@@ -68,7 +68,7 @@ const string sendAttemptToServer(int* current_row, int* current_col, user_t* pla
 
         case PLAYER_ATTEMPT:
             player->score = attempt_result.player.score;
-            strncpy(attempts[*current_attempt].word, player->current_attempt.word, word_size);
+            attempts[*current_attempt] = attempt_result.player.current_attempt;
             *current_col = 0;
             (*current_row)++;
             (*current_attempt)++;
@@ -99,5 +99,7 @@ void getPlayerRankingFromServer(highscore_t highscore[HIGHSCORE_SIZE], user_t* p
         strncpy(highscore[i].username, highscore_result.highscores[i].username, MAX_USERNAME_LEN);
         highscore[i].score = highscore_result.highscores[i].score;
     }
-    player->score = highscore_result.player.score;
+    if(player->score < highscore_result.player.score){
+        player->score = highscore_result.player.score;
+    }
 }

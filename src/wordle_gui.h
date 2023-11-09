@@ -19,7 +19,7 @@ void printCharacters(int start_y, int start_x, char character, int color) {
     } else {
         mvaddch(start_y, start_x, character);
     }
-    // attroff(COLOR_PAIR(selectedColorPair));
+    attroff(COLOR_PAIR(selectedColorPair));
 }
 
 void printTries(attempt_t attempts[MAX_ATTEMPTS], int word_size) {
@@ -27,7 +27,7 @@ void printTries(attempt_t attempts[MAX_ATTEMPTS], int word_size) {
     {
         for (int j = 0; j < MAX_ATTEMPTS; j++)
         {
-            printCharacters(j,i,attempts[j].word[i],attempts[i].colors[i]);
+            printCharacters(j,i,attempts[j].word[i],attempts[j].colors[i]);
         }
     }
 }
